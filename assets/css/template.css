@@ -1,0 +1,66 @@
+body{
+	margin:  0;
+}
+.topo{
+	height: 100px;
+}
+.menu{
+	height: 50px;
+	background-color: #DDD;
+}
+.menuint{
+	width: 100%;
+	max-width: 800px;
+	margin: auto;
+}
+.menu ul{
+	margin: 0px;
+	padding: 0px;
+}
+.menu li{
+	float: left;
+	list-style: none;
+	height: 50px;
+	line-height: 50px;
+	padding-left: 10px;
+	padding-right: 10px;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+.menu a{
+	color: #000;
+}
+.menu li:hover{
+	background-color: #CCC;
+}
+.container{
+	width: 100%;
+	max-width: 800px;
+	min-height: 300px;
+	margin: auto;
+}
+.rodape{
+	height: 100px;
+}
+.produto{
+	float: left;
+	width: 180px;
+	height: 230px;
+	margin: 10px;
+	text-align: center;
+	border: 2px solid #EEE;
+	color: #000;
+}
+.produto:hover{
+	border: 2px solid #CCC;
+}
+.produto_foto{
+	float: left;
+	width: 300px;
+	height: 300px;
+	margin: 20px 0 20px 0; 
+}
+.produto_info{
+	float: left;
+	margin-left: 20px;
+}
