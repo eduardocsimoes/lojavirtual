@@ -12,6 +12,9 @@
 			<td><img src="<?php echo BASE_URL; ?>assets/images/<?php echo $produtoDoCarrinho['imagem']; ?>" border="0" width="60"></td>
 			<td><?php echo $produtoDoCarrinho['nome']; ?></td>
 			<td><?php echo "R$ ".$produtoDoCarrinho['preco']; ?></td>
+			<td>
+				<a href="<?php echo BASE_URL; ?>carrinho/del/<?php echo $produtoDoCarrinho['id']; ?>">Remover</a>
+			</td>
 		</tr>
 		<?php $subtotal += $produtoDoCarrinho['preco']; ?>
 	<?php } ?>
@@ -20,6 +23,8 @@
 		<td></td>
 		<td align="left"><strong>SUBTOTAL:</strong></td>
 		<td align="left"><strong><?php echo "R$ ".$subtotal; ?></strong></td>
-		<td></td>
+		<td>
+			<a href="<?php echo BASE_URL; ?>carrinho/finalizar ?>">Finalizar Compra</a>
+		</td>
 	</tr>
 </table>

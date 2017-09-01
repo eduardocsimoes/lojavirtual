@@ -5,17 +5,20 @@
 
 			$dados = array();
 
-			if(isset($_SESSION['carrinho'])){
-				$carrinho = $_SESSION['carrinho'];
-			}
-
 			$categorias = new Categorias();
 			$produtos = new Produtos();
 
 			$dados['menu'] = $categorias->getCategorias();
-			$dados['carrinho'] = $produtos->produtosDoCarrinho($carrinho);
 
-			$this->loadTemplate('carrinho', $dados);
+			if(isset($_SESSION['carrinho']) && count($_SESSION['carrinho']) > 0){
+				$carrinho = $_SESSION['carrinho'];
+				$dados['carrinho'] = $produtos->produtosDoCarrinho($carrinho);
+				$this->loadTemplate('carrinho', $dados);
+			}else{
+				header("Location: ".BASE_URL);
+			}
+
+
 		}
 
 		public function add($id_produto = ''){
@@ -33,5 +36,98 @@
 				header("Location: ".BASE_URL."carrinho");
 			}
 		}
+
+		public function del($id_produto){
+
+			if(!empty($id_produto)){
+
+				$id_produto = addslashes($id_produto);
+
+				foreach($_SESSION['carrinho'] as $chaveCarrinho => $valorCarrinho){
+					if($valorCarrinho == $id_produto){
+						unset($_SESSION['carrinho'][$chaveCarrinho]);
+					}
+				}
+
+				header("Location: ".BASE_URL."carrinho");
+			}
+		}
+
+		public function finalizar(){
+
+			$dados = array(
+				"pagamentos" => array(),
+				"total" => 0,
+				"erro" => ''
+			);
+
+			if(isset($_SESSION['carrinho'])){
+				$carrinho = $_SESSION['carrinho'];
+
+				$categorias = new Categorias();
+				$pagamentos = new Pagamentos();
+				$produtos = new Produtos();
+				$usuario = new Usuarios();
+				$vendas = new Vendas();
+
+				$dados['menu'] = $categorias->getCategorias();
+				$dados['pagamentos'] = $pagamentos->getPagamentos();
+				$dados['carrinho'] = $produtos->produtosDoCarrinho($carrinho);
+
+				$dados['valor_carrinho'] = $produtos->valorTotalProdutosDoCarrinho($carrinho);
+
+				if(isset($_POST['nome']) && !empty($_POST['nome'])){
+					$nome = addslashes($_POST['nome']);
+					$email = addslashes($_POST['email']);
+					$senha = md5($_POST['senha']);
+
+					$endereco = addslashes($_POST['endereco']);
+
+					$tipo_pagamento = '';
+					if(!empty($_POST['pagamento'])){
+						$tipo_pagamento = $_POST['pagamento'];
+					}
+
+					if(!empty($email) && !empty($senha) && !empty($endereco) && !empty($tipo_pagamento)){
+
+						$id_usuario = 0;
+
+						if($usuario->usuarioExiste($email)){
+							if($usuario->verificarLogin($email, $senha)){
+								$id_usuario = $usuario->getUsuario($email);
+							}else{
+								echo $dados['erro'] = "Usuário ou senha inválidos!";
+							}
+						}else{
+
+							$id_usuario = $usuario->criarUsuario($nome, $email, $senha);
+						}
+
+						if($id_usuario > 0){
+							$link_venda = $vendas->setVenda($id_usuario, $endereco, $dados['valor_carrinho'], $tipo_pagamento, $dados['carrinho']);
+
+							header("Location: ".$link_venda);
+						}
+					}else{
+						echo $dados['erro'] = "Preecha todos os campos!";
+					}
+				}
+
+				$this->loadTemplate('finalizar_compra', $dados);
+			}else{
+				header("Location: ".BASE_URL);
+			}
+		}
+
+		public function obrigado(){
+
+			$dados = array();
+
+			$categorias = new Categorias();
+
+			$dados['menu'] = $categorias->getCategorias();			
+
+			$this->loadTemplate('obrigado', $dados);
+		}	
 	}
  ?>

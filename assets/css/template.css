@@ -64,3 +64,26 @@ body{
 	float: left;
 	margin-left: 20px;
 }
+.contato input[type=text],
+.contato input[type=email],
+.contato textarea{
+	width: 400px;
+	border: 1px solid #CCC;
+	padding: 10px;
+	font-size: 13px;
+}
+.contato textarea{
+	height: 200px;
+}
+.carrinho{
+	width: 100px;
+	height: 50px;
+	float: right;
+	text-align: right;
+}
+.erro{
+	padding: 15px;
+	border: 1px solid #000;
+	background-color: #EEE;
+	margin-bottom: 10px;
+}

@@ -16,11 +16,11 @@
 				$dados['menu'] = $categorias->getCategorias();
 				$dados['produto'] = $produtos->getProduto($id_produto);
 
-				if(empty($dados['produto'])){
+				if(is_array($dados['produto']) && count($dados['produto'] > 0)){
+					$this->loadTemplate('produto', $dados);	
+				}else{
 					header("Location: ".BASE_URL);
 				}
-
-				$this->loadTemplate('produto', $dados);
 			}else{
 				echo "id do produto não existente!";
 			}

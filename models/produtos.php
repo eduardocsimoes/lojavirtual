@@ -52,19 +52,38 @@
 			return $array;			
 		}
 
-		public function produtosDoCarrinho($carrinho){
+		public function produtosDoCarrinho($carrinho = array()){
 
 			$array = array();
 
-			$sql = "SELECT * FROM produtos WHERE id IN (".implode(",", $carrinho).")";
-			$sql = $this->db->prepare($sql);
-			$sql->execute();
+			if(is_array($carrinho) && count($carrinho) > 0){
+				$sql = "SELECT * FROM produtos WHERE id IN (".implode(",", $carrinho).")";
+				$sql = $this->db->prepare($sql);
+				$sql->execute();
 
-			if($sql->rowCount() > 0){
-				$array = $sql->fetchAll();
+				if($sql->rowCount() > 0){
+					$array = $sql->fetchAll();
+				}
 			}
 
 			return $array;			
+		}
+
+		public function valorTotalProdutosDoCarrinho($carrinho = array()){
+
+			$array = 0;
+
+			if(is_array($carrinho) && count($carrinho) > 0){
+				$sql = "SELECT SUM(preco) as valor_total FROM produtos WHERE id IN (".implode(",", $carrinho).")";
+				$sql = $this->db->prepare($sql);
+				$sql->execute();
+
+				if($sql->rowCount() > 0){
+					$array = $sql->fetch();
+				}
+			}
+
+			return $array;	
 		}
 	}
  ?>
