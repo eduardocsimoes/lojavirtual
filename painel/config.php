@@ -4,7 +4,7 @@
 
 	$config = array();
 	if(ENVIRONMENT == "development"){
-		define("BASE_URL", "http://localhost:8080/loja/");
+		define("BASE_URL", "http://localhost:8080/loja/painel/");
 		$config['dbname'] = "loja";
 		$config['host'] = 'localhost';
 		$config['dbuser'] = 'root';

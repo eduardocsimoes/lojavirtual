@@ -15,6 +15,7 @@
 						<a href="<?php echo BASE_URL ?>categoria/ver/<?php echo $menuitem['id']; ?>"><li><?php echo $menuitem['titulo']; ?></li></a>
 					<?php } ?>
 					<a href="<?php echo BASE_URL ?>contato"><li>Contato</li></a>
+					<a href="<?php echo BASE_URL ?>pedidos"><li>Pedidos</li></a>
 				</ul>
 				<a href="<?php echo BASE_URL ?>carrinho">
 					<div class="carrinho">

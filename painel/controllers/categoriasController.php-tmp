@@ -1,0 +1,22 @@
+<?php
+class categoriaController extends controller {
+
+	public function __construct() {
+		$admin = new Admins();
+
+		if ($adm->isLogged() == false) {
+			header("Location: ".BASE_URL."painel/login");
+		}
+	}
+
+	public function index() {
+
+		$dados = array();
+
+		$categorias    = new Categorias();
+		$dados['menu'] = $categorias->getCategorias();
+
+		$this->loadTemplate('categorias', $dados);
+	}
+}
+?>

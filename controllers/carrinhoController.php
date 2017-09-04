@@ -119,6 +119,12 @@
 			}
 		}
 
+		public function notificacao(){
+
+			$vendas = new Vendas();
+			$this->verificarVendas();
+		}
+
 		public function obrigado(){
 
 			$dados = array();

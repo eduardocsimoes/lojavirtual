@@ -1,6 +1,155 @@
 <?php
 class Vendas extends model {
 
+	public function getPedidosDoUsuario($id_usuario) {
+
+		$array = array();
+		if (!empty($id_usuario)) {
+			$sql = "SELECT
+								*,
+								(SELECT
+										nome
+								 FROM
+								 		pagamentos
+								 WHERE
+								 		pagamentos.id = vendas.forma_pg
+								 ) as desc_forma_pgto
+						FROM
+								vendas
+						WHERE
+								id_usuario = :id_usuario";
+			$sql = $this->db->prepare($sql);
+			$sql->bindValue(":id_usuario", $id_usuario);
+			$sql->execute();
+
+			if ($sql->rowCount() > 0) {
+				$array = $sql->fetchAll();
+			}
+		}
+
+		return $array;
+	}
+
+	public function getPedidoDoUsuario($id_pedido) {
+
+		$array = array();
+		if (!empty($id_pedido)) {
+			$sql = "SELECT
+								*,
+								(SELECT
+										nome
+								 FROM
+								 		pagamentos
+								 WHERE
+								 		pagamentos.id = vendas.forma_pg
+								 ) as desc_forma_pgto
+						FROM
+								vendas
+						WHERE
+								id = :id_pedido";
+			$sql = $this->db->prepare($sql);
+			$sql->bindValue(":id_pedido", $id_pedido);
+			$sql->execute();
+
+			if ($sql->rowCount() > 0) {
+				$array = $sql->fetch();
+
+				$array['produtos'] = $this->getProdutosDoPedido($id_pedido);
+			}
+		}
+
+		return $array;
+	}
+
+	public function getProdutosDoPedido($id_pedido) {
+
+		$sql = "SELECT
+							vendas_produtos.quantidade,
+							vendas_produtos.id_produto,
+							produtos.nome,
+							produtos.imagem,
+							produtos.preco
+					FROM
+							vendas_produtos
+					LEFT JOIN	produtos
+					  ON	produtos.id = vendas_produtos.id_produto
+					WHERE
+							id_venda = :id_pedido";
+		$sql = $this->db->prepare($sql);
+		$sql->bindValue(":id_pedido", $id_pedido);
+		$sql->execute();
+
+		if ($sql->rowCount() > 0) {
+			$array = $sql->fetchAll();
+		}
+
+		return $array;
+	}
+
+	public function isPedidoDoUsuario($id_pedido, $id_usuario) {
+
+		$sql = "SELECT * FROM vendas WHERE id = :id_pedido AND id_usuario = :id_usuario";
+		$sql = $this->db->prepare($sql);
+		$sql->bindValue(":id_pedido", $id_pedido);
+		$sql->bindValue(":id_usuario", $id_usuario);
+		$sql->execute();
+
+		if ($sql->rowCount() > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public function verificarVendas() {
+
+		require "libraries/PagSeguroLibrary/PagSeguroLibrary.php";
+
+		$code = '';
+		$type = '';
+
+		if (isset($_POST['notificationCode']) && isset($_POST['notificationType'])) {
+			$code = trim($_POST['notificationCode']);
+			$type = trim($_POST['notificationType']);
+
+			$notificationType = PagSeguroNotificationType($type);
+			$valueType        = $notificationType->getTypeFromValue();
+
+			$credentials = PagseguroConfig::getAccountCredentials();
+
+			try {
+				$transaction = PagSeguroNotificationService::checkTransaction($credentials, $code);
+				$reference   = $transaction->getReference();
+				$status      = $transaction->getStatus()->getValue();
+
+				$novoStatus = 0;
+				switch ($status) {
+					case '1'://Aguadando Pgto.
+					case '2'://Em análise
+						$novoStatus = '1';
+						break;
+					case '3'://Pago
+					case '4'://Disponível
+						$novoStatus = '2';
+						break;
+					case '6'://Devolvido
+					case '7'://Cancelado
+						$novoStatus = '3';
+						break;
+				}
+
+				$sql = "UPDATE vendas SET status_pg = :status WHERE id = :id_venda";
+				$sql = $this->db->prepare($sql);
+				$sql->bindValue(":status", $status);
+				$sql->bindValue(":id_venda", $reference);
+				$sql->execute();
+
+			} catch (PagSeguroServiceException $e) {
+				echo "Erro: ".$e->getMessage();
+			}
+		}
+	}
+
 	public function setVenda($id_usuario, $endereco, $valor, $tipo_pagamento, $produtos) {
 
 		/*
