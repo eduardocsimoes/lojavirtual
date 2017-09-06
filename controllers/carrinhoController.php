@@ -56,6 +56,66 @@
 		public function finalizar(){
 
 			$dados = array(
+				'total' => 0,
+				'sessionId' => '',
+				'erro' => '',
+				'produtos' => array()
+			);
+
+			$categorias = new Categorias();
+			$dados['menu'] = $categorias->getCategorias();
+
+			require 'libraries/PagSeguroLibrary/PagSeguroLibrary.php';
+
+			$carrinho = array();
+			if(isset($_SESSION['carrinho'])){
+				$carrinho = $_SESSION['carrinho'];
+			}
+
+			if(count($carrinho > 0)){
+				$produtos = new Produtos();
+				$dados['produtos'] = $produtos->produtosDoCarrinho($carrinho);
+
+				$total = $produtos->valorTotalProdutosDoCarrinho($carrinho);
+				$dados['total'] = $total['valor_total'];
+			}
+
+			if(isset($_POST['pg_form']) && !empty($_POST['pg_form'])){
+			
+			}else{
+				try{
+					$credentials = PagSeguroConfig::getAccountCredentials();
+					$dados['sessionId'] = PagSeguroSessionService::getSession($credentials);
+				}catch(PagSeguroServiceException $e){
+					die($e->getMessage());
+				}
+			}
+
+			$this->loadTemplate('finalizar_compra', $dados);
+		}
+
+		public function notificacao(){
+
+			$vendas = new Vendas();
+			$this->verificarVendas();
+		}
+
+		public function obrigado(){
+
+			$dados = array();
+
+			$categorias = new Categorias();
+
+			$dados['menu'] = $categorias->getCategorias();			
+
+			$this->loadTemplate('obrigado', $dados);
+		}	
+	}
+
+/* CODIGO ORIGINAL ANTES DO CHECKOUT TRANSPARENTE
+		public function finalizar(){
+
+			$dados = array(
 				"pagamentos" => array(),
 				"total" => 0,
 				"erro" => ''
@@ -118,22 +178,5 @@
 				header("Location: ".BASE_URL);
 			}
 		}
-
-		public function notificacao(){
-
-			$vendas = new Vendas();
-			$this->verificarVendas();
-		}
-
-		public function obrigado(){
-
-			$dados = array();
-
-			$categorias = new Categorias();
-
-			$dados['menu'] = $categorias->getCategorias();			
-
-			$this->loadTemplate('obrigado', $dados);
-		}	
-	}
+*/	
  ?>
