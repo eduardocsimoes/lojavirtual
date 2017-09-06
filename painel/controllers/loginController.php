@@ -33,7 +33,7 @@
 
 		public function logout(){
 
-			unset($_SESSION['lgcliente']);
+			unset($_SESSION['lgadmin']);
 
 			header("Location: ".BASE_URL."login");
 		}

@@ -15,10 +15,11 @@
 			<div class="menuint">
 				<ul>
 					<a href="<?php echo BASE_URL?>"><li>Home</li></a>
-					<a href="<?php echo BASE_URL?>categoria"><li>Categoria</li></a>
+					<a href="<?php echo BASE_URL?>categorias"><li>Categoria</li></a>
 					<a href="<?php echo BASE_URL?>produtos"><li>Produtos</li></a>
 					<a href="<?php echo BASE_URL?>vendas"><li>Vendas</li></a>
 					<a href="<?php echo BASE_URL?>usuarios"><li>Usuarios</li></a>
+					<a href="<?php echo BASE_URL?>login/logout"><li>Sair</li></a>
 				</ul>
 			</div>
 		</div>
