@@ -81,7 +81,42 @@
 			}
 
 			if(isset($_POST['pg_form']) && !empty($_POST['pg_form'])){
-			
+				$nome = addslashes($_POST['nome']);
+				$email = addslashes($_POST['email']);
+				$senha = addslashes($_POST['senha']);
+				$session = addslashes($_POST['sessionId']);
+
+				if(!empty($email) && !empty($senha)){
+					$id_usuario = 0;
+
+					$usuario = new Usuario();
+					if($usuario->usuarioExiste($email)){
+						if($usuario->verificarLogin($email,$senha)){
+							$id_usuario = $usuario->getUsuario($email);
+						}else{
+							$dados['erro'] = "Usuario e/ou Senha Invalidos!";
+						}
+					}else{
+						$id_usuario = $usuario->criarUsuario($nome, $email, $senha);
+					}
+
+					if($id_usuario > 0){
+						$vendas = new Vendas();
+						$venda = $vendas->setVendaCKTransparente($_POST, $id_usuario, $sessionId, $dados['produtos'], $dados['total']);
+
+						$tipo = $venda->getPaymentMethod()->getType()->getValue();
+
+						if($tipo == '4'){
+							$link = $venda->getPaymentLink();
+							$vendas->setLinkBySession($link, $sessionId);
+							header("Location: ".$link);
+						}else{
+							header("Location: /carrinho/obrigado");
+						}
+					}
+				}else{
+					$dados['erro'] = "Preecha todos os campos";
+				}
 			}else{
 				try{
 					$credentials = PagSeguroConfig::getAccountCredentials();

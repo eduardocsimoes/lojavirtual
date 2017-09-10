@@ -219,5 +219,140 @@
 
 			return $link;
 		}
+
+		public function setVendaCKTransparente($params, $id_usuario, $sessionId, $produtos, $subtotal){
+
+			require 'Libraries/PagSeguroLibrary/PagSeguroLibrary.php';
+
+			/*
+			1 => Aguardando Pagamento
+			2 => Aprovado
+			3 => Cancelado
+			*/
+			$status = 1;
+			$link = '';
+
+			$end = implode(', ',$params['endereco']);
+
+			$sql = "INSERT INTO vendas SET id_usuario = :id_usuario, endereco = :endereco, valor = :valor, forma_pg = '6', status_pg = :status, pg_link = :link";
+			$sql = $this->db->prepare($sql);
+			$sql->bindValue(":id_usuario", $id_usuario);
+			$sql->bindValue(":endereco", $endereco);
+			$sql->bindValue(":valor", $valor['valor_total']);
+			$sql->bindValue(":tipo_pagamento", $tipo_pagamento);
+			$sql->bindValue(":status", $status);
+			$sql->bindValue(":link", $sessionId);
+			$sql->execute();
+
+			$id_venda = $this->db->lastInsertId();
+
+			foreach($produtos as $produto){
+
+				$sql = "INSERT INTO vendas_produtos SET id_venda = :id_venda, id_produto = :id_produto, quantidade = :quantidade";
+				$sql = $this->db->prepare($sql);
+				$sql->bindValue(":id_venda", $id_venda);
+				$sql->bindValue(":id_produto", $produto['id']);
+				$sql->bindValue(":quantidade", 1);
+				$sql->execute();
+			}
+
+			unset($_SESSION['carrinho']);
+
+			$directPaymentRequest = new PagSeguroDirectPaymentRequest();
+			$directPaymentRequest->setPaymentMode('DEFAULT');
+			$directPaymentRequest->setPaymentMethod($params['pg_form']);
+			$directPaymentRequest->setReference($id_venda);
+			$directPaymentRequest->setCurrency('BRL');
+			$paymentRequest->addParameter("notificationURL", BASE_URL."carrinho/notificacao");
+
+			foreach($produtos as $produto){
+				$directPaymentRequest->addItem($produto['id'], $produto['nome'], 1, $produto['preco']);
+			}
+
+			$directPaymentRequest->setSender(
+				$params['nome'],
+				$params['email'],
+				$params['ddd'],
+				$params['telefone'],
+				'CPF',
+				$params['c_cpf']
+			);
+
+			$directPaymentRequest->setSenderHash($params['shash']);
+
+			$directPaymentRequest->setShippingType(3);
+			$directPaymentRequest->setShippingCost(0);
+			$directPaymentRequest->setShippingAddress(
+				$params['endereco']['cep'],
+				$params['endereco']['rua'],
+				$params['endereco']['numero'],
+				$params['endereco']['comp'],
+				$params['endereco']['bairro'],
+				$params['endereco']['cidade'],
+				$params['endereco']['estado'],
+				'BRA'
+			);
+
+			$billingAddress = new PagSeguroBilling(
+				array(
+					'postalCode' => $params['endereco']['cep'],
+					'street' => $params['endereco']['rua'],
+					'number' => $params['endereco']['numero'],
+					'complement' => $params['endereco']['comp'],
+					'district' => $params['endereco']['bairro'],
+					'city' => $params['endereco']['cidade'],
+					'state' => $params['endereco']['estado'],
+					'country' => 'BRA'
+				)
+			);
+
+			if($params['pg_form'] == 'CREDIT_CARD'){
+				$parc = explode(';', $params['parc']);
+
+				$installments = new PagSeguroInstallment(
+					'',
+					$parc[0],
+					$parc[1],
+					'',
+					''
+				);
+
+				$creditCardData = new PagSeguroCreditCardCheckout(
+					array(
+						'token' => $params['ctoken'],
+						'installment' => $installments,
+						'billing' => $billingAddress,
+						'holder' => new PagSeguroCreditCardHolder(
+							array(
+								'name' => $params['c_titular'],
+								'birthDate' => date('01/10/1979'),
+								'areaCode' => $params['ddd'],
+								'number' => $params['telefone'],
+								'documents' => array(
+									'type' => 'CPF',
+									'value' => $params['c_cpf']
+								)
+							)
+						)
+					)
+				);
+
+				$directPaymentRequest->setCreditCard($creditCardData);
+			}
+
+			try{
+				$credentials = PagSeguroConfig::getAccountCredentials();
+				$r = $directPaymentRequest->register($credentials);
+
+				return $r;
+			}catch(PagSeguroServiceException $e){
+				die($e->getMessage());
+			}
+		}
+
+		public function setLinkBySession($link, $sessionId){
+
+			$this->db->query("UPDATE vendas SET pg_link = '$link' WHERE pg_link = '$sessionId'");
+		}
 	}
 ?>

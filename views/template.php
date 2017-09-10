@@ -12,7 +12,7 @@
 					<a href="<?php echo BASE_URL ?>"><li>Home</li></a>
 					<a href="<?php echo BASE_URL ?>empresa"><li>Empresa</li></a>
 					<?php foreach($viewData['menu'] as $menuitem){ ?>
-						<a href="<?php echo BASE_URL ?>categoria/ver/<?php echo $menuitem['id']; ?>"><li><?php echo $menuitem['titulo']; ?></li></a>
+						<a href="<?php echo BASE_URL ?>categoria/ver/<?php echo $menuitem['id']; ?>"><li><?php echo utf8_encode($menuitem['titulo']); ?></li></a>
 					<?php } ?>
 					<a href="<?php echo BASE_URL ?>contato"><li>Contato</li></a>
 					<a href="<?php echo BASE_URL ?>pedidos"><li>Pedidos</li></a>

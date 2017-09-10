@@ -3,7 +3,7 @@
 </div>
 <div class="produto_info">
 	<h2><?php echo $produto['nome']; ?></h2>
-	<?php echo $produto['descricao']; ?>
+	<?php echo utf8_encode($produto['descricao']); ?>
 	<h3><?php echo "R$ ".$produto['preco']; ?></h3>
 	<a href="<?php echo BASE_URL; ?>carrinho/add/<?php echo $produto['id']; ?>">Adicionar ao Carrinho</a>
 </div>
